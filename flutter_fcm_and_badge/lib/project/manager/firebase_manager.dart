@@ -1,47 +1,38 @@
-import 'package:firebase_core/firebase_core.dart';
+import 'dart:developer';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 class FirebaseManager {
-  late final FirebaseMessaging? _messaging;
-  static FirebaseManager? _instance;
+  static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
-  static FirebaseManager get instance => _instance ??= FirebaseManager._init();
-
-  FirebaseManager._init() {
-    _messaging = FirebaseMessaging.instance;
-    _init();
-  }
-  void _init() async {
-    NotificationSettings settings = await _messaging!.getNotificationSettings();
+  static void init() async {
+    NotificationSettings settings = await _messaging.getNotificationSettings();
     if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-      NotificationSettings settings = await requestPermission();
+      NotificationSettings settings = await _requestPermission();
       if (settings.authorizationStatus != AuthorizationStatus.authorized) {
         return;
       }
     }
-    await _messaging!.subscribeToTopic('all');
+    await _messaging.subscribeToTopic('all');
     FirebaseMessaging.onMessage.listen(_firebaseMessagingForegroundHandler);
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
 
-  void _firebaseMessagingForegroundHandler(RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
-
+  static void _firebaseMessagingForegroundHandler(RemoteMessage message) {
     if (message.notification != null) {
-      print('Message also contained a notification: ${message.notification}');
+      log('Message also contained a notification: ${message.notification!.body}');
     }
   }
 
-  Future<void> _firebaseMessagingBackgroundHandler(
+  static Future<void> _firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
-    await Firebase.initializeApp();
-
-    print("Handling a background message: ${message.messageId}");
+    if (message.notification != null) {
+      log('Message also contained a notification: ${message.notification!.body}');
+    }
   }
 
-  Future<NotificationSettings> requestPermission() async {
-    NotificationSettings settings = await _messaging!.requestPermission(
+  static Future<NotificationSettings> _requestPermission() async {
+    NotificationSettings settings = await _messaging.requestPermission(
       alert: true,
       announcement: false,
       badge: true,
@@ -50,7 +41,7 @@ class FirebaseManager {
       provisional: false,
       sound: true,
     );
-    print('User granted permission: ${settings.authorizationStatus}');
+    log('User granted permission: ${settings.authorizationStatus}');
     return settings;
   }
 }
