@@ -1,11 +1,23 @@
 import 'dart:developer';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+part 'local_notification_service.dart';
 
 class FirebaseManager {
-  static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  static late final FirebaseManager? _instance;
+  static late final FirebaseMessaging _messaging;
 
-  static void init() async {
+  FirebaseManager._() {
+    Firebase.initializeApp();
+    _messaging = FirebaseMessaging.instance;
+  }
+
+  static FirebaseManager get instance => _instance ??= FirebaseManager._();
+
+  void init() async {
     NotificationSettings settings = await _messaging.getNotificationSettings();
     if (settings.authorizationStatus != AuthorizationStatus.authorized) {
       NotificationSettings settings = await _requestPermission();
@@ -14,24 +26,25 @@ class FirebaseManager {
       }
     }
     await _messaging.subscribeToTopic('all');
+    LocaleNotificationService.instance.init();
     FirebaseMessaging.onMessage.listen(_firebaseMessagingForegroundHandler);
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
 
-  static void _firebaseMessagingForegroundHandler(RemoteMessage message) {
+  void _firebaseMessagingForegroundHandler(RemoteMessage message) {
     if (message.notification != null) {
-      log('Message also contained a notification: ${message.notification!.body}');
+      log('Foreground Handler: ${message.notification!.body}');
     }
   }
 
-  static Future<void> _firebaseMessagingBackgroundHandler(
+  Future<void> _firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
     if (message.notification != null) {
-      log('Message also contained a notification: ${message.notification!.body}');
+      log('Background Handler: ${message.notification!.body}');
     }
   }
 
-  static Future<NotificationSettings> _requestPermission() async {
+  Future<NotificationSettings> _requestPermission() async {
     NotificationSettings settings = await _messaging.requestPermission(
       alert: true,
       announcement: false,
