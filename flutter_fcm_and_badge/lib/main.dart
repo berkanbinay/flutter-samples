@@ -1,10 +1,12 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_fcm_and_badge/project/manager/firebase_manager/firebase_manager.dart';
 
 import 'feature/view/home_page.dart';
-import 'project/manager/firebase_manager/firebase_manager.dart';
+import 'firebase_options.dart';
 
-void main() {
-  _initApp();
+void main() async {
+  await _initApp();
   runApp(const MyApp());
 }
 
@@ -22,5 +24,6 @@ class MyApp extends StatelessWidget {
 
 Future<void> _initApp() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseManager.instance.init();
 }

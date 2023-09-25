@@ -7,45 +7,45 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 part 'local_notification_service.dart';
 
 class FirebaseManager {
-  static late final FirebaseManager? _instance;
-  static late final FirebaseMessaging _messaging;
+  static FirebaseManager? _instance;
+  static FirebaseMessaging? _messaging;
 
   FirebaseManager._() {
-    Firebase.initializeApp();
     _messaging = FirebaseMessaging.instance;
   }
 
   static FirebaseManager get instance => _instance ??= FirebaseManager._();
 
   void init() async {
-    NotificationSettings settings = await _messaging.getNotificationSettings();
+    NotificationSettings settings = await _messaging!.getNotificationSettings();
     if (settings.authorizationStatus != AuthorizationStatus.authorized) {
       NotificationSettings settings = await _requestPermission();
       if (settings.authorizationStatus != AuthorizationStatus.authorized) {
         return;
       }
     }
-    await _messaging.subscribeToTopic('all');
+    await _messaging!.subscribeToTopic('all');
     LocaleNotificationService.instance.init();
     FirebaseMessaging.onMessage.listen(_firebaseMessagingForegroundHandler);
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    // TODO: fix background message
+    // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
 
   void _firebaseMessagingForegroundHandler(RemoteMessage message) {
     if (message.notification != null) {
-      log('Foreground Handler: ${message.notification!.body}');
+      log('Foreground Handler: ${message.notification?.body}');
     }
   }
 
   Future<void> _firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
     if (message.notification != null) {
-      log('Background Handler: ${message.notification!.body}');
+      log('Background Handler: ${message.notification?.body}');
     }
   }
 
   Future<NotificationSettings> _requestPermission() async {
-    NotificationSettings settings = await _messaging.requestPermission(
+    NotificationSettings settings = await _messaging!.requestPermission(
       alert: true,
       announcement: false,
       badge: true,

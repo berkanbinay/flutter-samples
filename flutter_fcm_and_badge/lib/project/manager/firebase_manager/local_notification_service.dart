@@ -1,7 +1,7 @@
 part of 'firebase_manager.dart';
 
 class LocaleNotificationService {
-  static late final LocaleNotificationService? _instance;
+  static LocaleNotificationService? _instance;
   late final FlutterLocalNotificationsPlugin _localNotificationsPlugin;
   LocaleNotificationService._() {
     _localNotificationsPlugin = FlutterLocalNotificationsPlugin();
