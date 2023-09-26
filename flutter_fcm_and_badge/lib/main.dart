@@ -6,10 +6,12 @@ import 'feature/view/home_page.dart';
 import 'firebase_options.dart';
 
 void main() async {
-  await _initApp();
+  _initApp();
   runApp(const MyApp());
 }
 
+// TODO: Test on iOS
+// TODO: Add app icon badge
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
